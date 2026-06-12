@@ -215,14 +215,25 @@
         }
 
         .last-update {
-            text-align: center;
-            padding: 8px 12px;
+            padding: 12px;
             color: #1a1a1a;
             border-top: 2px solid #000;
-            font-size: 0.75em;
-            background: #fff;
+            font-size: 0.8em;
+            background: #fffbf0;
+            line-height: 1.4;
+        }
+
+        .update-time {
             font-weight: 700;
             text-transform: uppercase;
+            margin-bottom: 4px;
+            color: #000;
+            font-size: 0.95em;
+        }
+
+        .volunteer-note {
+            font-weight: 500;
+            color: #333;
         }
 
         @media (max-width: 768px) {
@@ -278,7 +289,11 @@
         </div>
         
         <div class="last-update" id="last-update" style="display: none;">
-            Mise à jour quotidienne à 13h
+            <div class="update-time">Mise à jour quotidienne à 13h</div>
+            <div class="volunteer-note">
+                Les inscriptions sont validées manuellement par des bénévoles par ordre chronologique d'arrivée. 
+                Le nombre de places affiché est indicatif : d'autres demandes en cours de validation peuvent déjà occuper les places restantes.
+            </div>
         </div>
     </div>
 
