@@ -47,7 +47,7 @@
             letter-spacing: -0.5px;
         }
 
-        /* Panneau de filtrage néo-brutaliste avec menus déroulants */
+        /* Panneau de filtrage néo-brutaliste */
         .filters-container {
             padding: 12px;
             background: #fbfbfa;
@@ -71,7 +71,7 @@
             margin-top: 4px;
         }
 
-        /* Style Néo-brutaliste pour les éléments Select */
+        /* Style Néo-brutaliste pour les Select */
         select {
             font-family: inherit;
             font-size: 0.85em;
@@ -245,13 +245,13 @@
             <h1>Places Disponibles</h1>
         </div>
         
-        <!-- Section des filtres avec menus déroulants -->
+        <!-- Section des filtres -->
         <div class="filters-container">
-            <span class="filters-title-text">Filtres</span>
+            <span class="filters-title-text">Sélectionnez vos critères</span>
             <div class="dropdowns-row">
                 <!-- Menu déroulant principal (Catégories) -->
                 <select id="select-category">
-                    <option value="Tous">Tous les cours</option>
+                    <option value="" disabled selected>-- Catégorie --</option>
                     <option value="5-6 ans">5-6 ans</option>
                     <option value="Primaires">Primaires</option>
                     <option value="Collégiens">Collégiens</option>
@@ -360,12 +360,22 @@
             const selectedCat = selectCategory.value;
             const selectedLevel = selectLevel.style.display !== 'none' ? selectLevel.value : 'Tous';
             
-            // Filtrer par Catégorie
-            if (selectedCat !== 'Tous' && course.category !== selectedCat) {
+            // Si la catégorie n'est pas sélectionnée
+            if (!selectedCat) {
                 return false;
             }
             
-            // Filtrer par Niveau
+            // Si le cours n'appartient pas à la catégorie
+            if (course.category !== selectedCat) {
+                return false;
+            }
+            
+            // Si le niveau requis n'a pas encore été choisi
+            if (selectedLevel === '') {
+                return false;
+            }
+            
+            // Filtrer par niveau
             if (selectedLevel !== 'Tous' && course.level !== selectedLevel) {
                 return false;
             }
@@ -377,14 +387,27 @@
             const container = document.getElementById('courses-container');
             container.innerHTML = '';
             
-            if (!coursesData || !Array.isArray(coursesData)) {
-                console.error('Données des cours invalides:', coursesData);
-                showError();
+            const selectCategory = document.getElementById('select-category');
+            const selectLevel = document.getElementById('select-level');
+            
+            const selectedCat = selectCategory.value;
+            const selectedLevel = selectLevel.style.display !== 'none' ? selectLevel.value : 'Tous';
+            
+            // Si aucun filtre de catégorie n'a été choisi
+            if (!selectedCat) {
+                container.innerHTML = '<div style="text-align: center; padding: 24px; color: #1a1a1a; font-weight: 700; text-transform: uppercase; border: 2px dashed #000; background: #fff;">Veuillez choisir une catégorie pour afficher les cours</div>';
                 return;
             }
             
-            if (coursesData.length === 0) {
-                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #6c757d;">Aucun cours disponible pour le moment</div>';
+            // Si un niveau est requis mais non encore sélectionné
+            if (selectedCat in subLevelsByCategory && selectedLevel === '') {
+                container.innerHTML = '<div style="text-align: center; padding: 24px; color: #1a1a1a; font-weight: 700; text-transform: uppercase; border: 2px dashed #000; background: #fff;">Veuillez sélectionner un niveau</div>';
+                return;
+            }
+            
+            if (!coursesData || !Array.isArray(coursesData)) {
+                console.error('Données des cours invalides:', coursesData);
+                showError();
                 return;
             }
             
@@ -421,7 +444,7 @@
             });
 
             if (displayedCount === 0) {
-                container.innerHTML = '<div style="text-align: center; padding: 24px; color: #6c757d; font-weight: 700; text-transform: uppercase; border: 2px dashed #000;">Aucun cours ne correspond aux filtres sélectionnés</div>';
+                container.innerHTML = '<div style="text-align: center; padding: 24px; color: #1a1a1a; font-weight: 700; text-transform: uppercase; border: 2px dashed #000; background: #fff;">Aucun cours disponible pour cette sélection</div>';
             }
         }
 
@@ -435,10 +458,12 @@
             selectLevel.innerHTML = '';
             
             if (category in subLevelsByCategory) {
-                // Créer l'option par défaut pour "Tous les niveaux"
+                // Créer l'option par défaut "Choisir niveau"
                 const defaultOpt = document.createElement('option');
-                defaultOpt.value = 'Tous';
-                defaultOpt.textContent = `Tous les niveaux`;
+                defaultOpt.value = '';
+                defaultOpt.disabled = true;
+                defaultOpt.selected = true;
+                defaultOpt.textContent = `-- Choisir niveau --`;
                 selectLevel.appendChild(defaultOpt);
                 
                 // Peupler les niveaux correspondants
