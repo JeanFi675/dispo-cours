@@ -290,6 +290,37 @@
             'Adultes': ['Loisir', 'Perfectionnement']
         };
 
+        // Ordre chronologique des jours (Lundi = 1er jour de la semaine)
+        const daysMap = {
+            'lundi': 1,
+            'mardi': 2,
+            'mercredi': 3,
+            'jeudi': 4,
+            'vendredi': 5,
+            'samedi': 6,
+            'dimanche': 7
+        };
+
+        // Calcule une valeur de tri numérique chronologique pour un créneau (ex: "Mardi à 17:00")
+        function getScheduleSortValue(schedule) {
+            if (!schedule) return 999999;
+            const parts = schedule.toLowerCase().split(' à ');
+            const dayName = parts[0]?.trim();
+            const timeStr = parts[1]?.trim();
+            
+            const dayVal = daysMap[dayName] || 8;
+            
+            let timeVal = 0;
+            if (timeStr) {
+                const timeParts = timeStr.split(':');
+                const hours = parseInt(timeParts[0], 10) || 0;
+                const minutes = parseInt(timeParts[1], 10) || 0;
+                timeVal = hours * 60 + minutes;
+            }
+            
+            return dayVal * 10000 + timeVal;
+        }
+
         // Données conservées localement pour le filtrage
         let rawCoursesData = [];
 
@@ -411,16 +442,19 @@
                 return;
             }
             
-            let displayedCount = 0;
+            // Parser et filtrer les cours d'abord
+            const filteredCourses = coursesData
+                .map(course => parseCourseName(course.Place_dispo))
+                .filter(course => shouldShowCourse(course));
             
-            coursesData.forEach(course => {
-                const parsed = parseCourseName(course.Place_dispo);
-                
-                if (!shouldShowCourse(parsed)) {
-                    return;
-                }
-                
-                displayedCount++;
+            // Trier les cours par ordre chronologique
+            filteredCourses.sort((a, b) => {
+                return getScheduleSortValue(a.schedule) - getScheduleSortValue(b.schedule);
+            });
+            
+            let displayedCount = filteredCourses.length;
+            
+            filteredCourses.forEach(parsed => {
                 const placesClass = getPlacesClass(parsed.places);
                 
                 const courseCard = document.createElement('div');
