@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Places Disponibles - Cours</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap');
+
         * {
             margin: 0;
             padding: 0;
@@ -12,49 +14,110 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f7fa;
+            font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+            background: #fafaf9;
             margin: 0;
             padding: 8px;
+            color: #1a1a1a;
         }
 
         .container {
             max-width: 100%;
             margin: 0 auto;
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 2px solid #000;
+            box-shadow: 4px 4px 0px #000;
+            border-radius: 4px;
             overflow: hidden;
         }
 
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: #ffde4d;
+            color: #000;
             padding: 12px;
             text-align: center;
+            border-bottom: 2px solid #000;
         }
 
         .header h1 {
             font-size: 1.4em;
             margin-bottom: 2px;
-            font-weight: 500;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: -0.5px;
         }
 
+        /* Panneau de filtrage néo-brutaliste avec menus déroulants */
+        .filters-container {
+            padding: 12px;
+            background: #fbfbfa;
+            border-bottom: 2px solid #000;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .filters-title-text {
+            font-weight: 700;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .dropdowns-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 4px;
+        }
+
+        /* Style Néo-brutaliste pour les éléments Select */
+        select {
+            font-family: inherit;
+            font-size: 0.85em;
+            font-weight: 700;
+            padding: 6px 12px;
+            border: 2px solid #000;
+            box-shadow: 2px 2px 0px #000;
+            background: #fff;
+            cursor: pointer;
+            outline: none;
+            text-transform: uppercase;
+            border-radius: 0;
+            transition: all 0.1s ease;
+        }
+
+        select:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 3px 3px 0px #000;
+        }
+
+        select:focus {
+            background: #ffde4d;
+            transform: translate(-1px, -1px);
+            box-shadow: 3px 3px 0px #000;
+        }
+
+        /* Grille des cours */
         .loading {
             text-align: center;
             padding: 40px;
-            color: #6c757d;
-            font-style: italic;
+            color: #1a1a1a;
+            font-weight: 700;
+            text-transform: uppercase;
         }
 
         .error {
             text-align: center;
             padding: 20px;
-            color: #e74c3c;
-            background: #fdf2f2;
-            border-left: 4px solid #e74c3c;
+            color: #000;
+            background: #ff8b94;
+            border: 2px solid #000;
+            box-shadow: 3px 3px 0px #000;
             margin: 12px;
             border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
         }
 
         .courses-grid {
@@ -65,18 +128,18 @@
         }
 
         .course-card {
-            background: #fafbfc;
-            border-left: 3px solid #667eea;
-            border-radius: 6px;
+            background: #fff;
+            border: 2px solid #000;
+            box-shadow: 2px 2px 0px #000;
+            border-radius: 4px;
             padding: 12px;
-            transition: all 0.2s ease;
-            border: 1px solid #e1e5e9;
+            transition: all 0.1s ease;
         }
 
         .course-card:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            background: #f8f9ff;
+            transform: translate(-1px, -1px);
+            box-shadow: 3px 3px 0px #000;
+            background: #fafaf9;
         }
 
         .course-info {
@@ -93,70 +156,73 @@
 
         .course-name {
             font-size: 0.95em;
-            font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 4px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 6px;
             line-height: 1.2;
+            text-transform: uppercase;
         }
 
         .course-meta {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 6px;
             font-size: 0.8em;
-            color: #6c757d;
         }
 
         .schedule-tag {
             background: #e3f2fd;
             color: #1976d2;
             padding: 2px 6px;
-            border-radius: 12px;
-            font-size: 0.75em;
-            white-space: nowrap;
+            border: 1.5px solid #000;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.95em;
         }
 
         .instructor-tag {
             background: #f3e5f5;
             color: #7b1fa2;
             padding: 2px 6px;
-            border-radius: 12px;
-            font-size: 0.75em;
-            white-space: nowrap;
+            border: 1.5px solid #000;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.95em;
         }
 
         .places-available {
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #27ae60, #2ecc71);
-            color: white;
+            background: #8de69f;
+            color: #000;
+            border: 2px solid #000;
+            box-shadow: 2px 2px 0px #000;
             padding: 6px 10px;
-            border-radius: 16px;
-            font-weight: 600;
-            font-size: 0.8em;
-            min-width: 60px;
+            font-weight: 700;
+            font-size: 0.9em;
+            min-width: 48px;
+            height: 36px;
             text-align: center;
-            box-shadow: 0 2px 8px rgba(39, 174, 96, 0.2);
         }
 
         .places-low {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            box-shadow: 0 2px 8px rgba(231, 76, 60, 0.2);
+            background: #ff8b94;
         }
 
         .places-medium {
-            background: linear-gradient(135deg, #f39c12, #e67e22);
-            box-shadow: 0 2px 8px rgba(243, 156, 18, 0.2);
+            background: #ffd166;
         }
 
         .last-update {
             text-align: center;
             padding: 8px 12px;
-            color: #6c757d;
-            border-top: 1px solid #e9ecef;
+            color: #1a1a1a;
+            border-top: 2px solid #000;
             font-size: 0.75em;
-            background: #f8f9fa;
+            background: #fff;
+            font-weight: 700;
+            text-transform: uppercase;
         }
 
         @media (max-width: 768px) {
@@ -170,10 +236,6 @@
                 align-self: flex-end;
                 max-width: fit-content;
             }
-            
-            .course-meta {
-                gap: 4px;
-            }
         }
     </style>
 </head>
@@ -181,6 +243,26 @@
     <div class="container">
         <div class="header">
             <h1>Places Disponibles</h1>
+        </div>
+        
+        <!-- Section des filtres avec menus déroulants -->
+        <div class="filters-container">
+            <span class="filters-title-text">Filtres</span>
+            <div class="dropdowns-row">
+                <!-- Menu déroulant principal (Catégories) -->
+                <select id="select-category">
+                    <option value="Tous">Tous les cours</option>
+                    <option value="5-6 ans">5-6 ans</option>
+                    <option value="Primaires">Primaires</option>
+                    <option value="Collégiens">Collégiens</option>
+                    <option value="Lycéen">Lycéens</option>
+                    <option value="Adultes">Adultes</option>
+                </select>
+                
+                <!-- Sous-menu déroulant (Niveaux), masqué par défaut -->
+                <select id="select-level" style="display: none;">
+                </select>
+            </div>
         </div>
         
         <div id="loading" class="loading">
@@ -201,23 +283,67 @@
     </div>
 
     <script>
+        // Définition des sous-niveaux pour les catégories
+        const subLevelsByCategory = {
+            'Primaires': ['Débutants', 'Confirmés'],
+            'Collégiens': ['Débutants', 'Confirmés'],
+            'Adultes': ['Loisir', 'Perfectionnement']
+        };
+
+        // Données conservées localement pour le filtrage
+        let rawCoursesData = [];
+
+        function getCategoryAndLevel(courseName) {
+            const nameLower = courseName.toLowerCase();
+            const normalized = nameLower.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            
+            let category = 'Autre';
+            let level = null;
+            
+            if (normalized.includes('5-6 ans') || normalized.includes('5-6')) {
+                category = '5-6 ans';
+            } else if (normalized.includes('primaire')) {
+                category = 'Primaires';
+            } else if (normalized.includes('collegien')) {
+                category = 'Collégiens';
+            } else if (normalized.includes('lyceen')) {
+                category = 'Lycéen';
+            } else if (normalized.includes('adulte')) {
+                category = 'Adultes';
+            }
+            
+            if (normalized.includes('debutant')) {
+                level = 'Débutants';
+            } else if (normalized.includes('confirme')) {
+                level = 'Confirmés';
+            } else if (normalized.includes('loisir')) {
+                level = 'Loisir';
+            } else if (normalized.includes('perfectionnement')) {
+                level = 'Perfectionnement';
+            }
+            
+            return { category, level };
+        }
+
         function parseCourseName(courseString) {
-            // Parse la chaîne "Nom du cours | Planning | Instructeur : Nombre"
             const parts = courseString.split(' : ');
             const placesCount = parseInt(parts[parts.length - 1]);
             const remainingString = parts.slice(0, -1).join(' : ');
             
-            // Séparer par les pipes pour obtenir les parties
             const pipeParts = remainingString.split(' | ');
             const instructor = pipeParts[pipeParts.length - 1];
             const courseName = pipeParts[0];
             const schedule = pipeParts[1];
             
+            const catLevel = getCategoryAndLevel(courseName);
+            
             return {
                 name: courseName,
                 schedule: schedule,
                 instructor: instructor,
-                places: placesCount
+                places: placesCount,
+                category: catLevel.category,
+                level: catLevel.level
             };
         }
 
@@ -227,11 +353,30 @@
             return '';
         }
 
+        function shouldShowCourse(course) {
+            const selectCategory = document.getElementById('select-category');
+            const selectLevel = document.getElementById('select-level');
+            
+            const selectedCat = selectCategory.value;
+            const selectedLevel = selectLevel.style.display !== 'none' ? selectLevel.value : 'Tous';
+            
+            // Filtrer par Catégorie
+            if (selectedCat !== 'Tous' && course.category !== selectedCat) {
+                return false;
+            }
+            
+            // Filtrer par Niveau
+            if (selectedLevel !== 'Tous' && course.level !== selectedLevel) {
+                return false;
+            }
+            
+            return true;
+        }
+
         function renderCourses(coursesData) {
             const container = document.getElementById('courses-container');
             container.innerHTML = '';
             
-            // Vérification que coursesData existe et est un tableau
             if (!coursesData || !Array.isArray(coursesData)) {
                 console.error('Données des cours invalides:', coursesData);
                 showError();
@@ -243,8 +388,16 @@
                 return;
             }
             
+            let displayedCount = 0;
+            
             coursesData.forEach(course => {
                 const parsed = parseCourseName(course.Place_dispo);
+                
+                if (!shouldShowCourse(parsed)) {
+                    return;
+                }
+                
+                displayedCount++;
                 const placesClass = getPlacesClass(parsed.places);
                 
                 const courseCard = document.createElement('div');
@@ -266,6 +419,52 @@
                 
                 container.appendChild(courseCard);
             });
+
+            if (displayedCount === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 24px; color: #6c757d; font-weight: 700; text-transform: uppercase; border: 2px dashed #000;">Aucun cours ne correspond aux filtres sélectionnés</div>';
+            }
+        }
+
+        function handleCategoryChange() {
+            const selectCategory = document.getElementById('select-category');
+            const selectLevel = document.getElementById('select-level');
+            
+            const category = selectCategory.value;
+            
+            // Vider le sous-menu de ses anciennes options
+            selectLevel.innerHTML = '';
+            
+            if (category in subLevelsByCategory) {
+                // Créer l'option par défaut pour "Tous les niveaux"
+                const defaultOpt = document.createElement('option');
+                defaultOpt.value = 'Tous';
+                defaultOpt.textContent = `Tous les niveaux`;
+                selectLevel.appendChild(defaultOpt);
+                
+                // Peupler les niveaux correspondants
+                subLevelsByCategory[category].forEach(level => {
+                    const opt = document.createElement('option');
+                    opt.value = level;
+                    opt.textContent = level;
+                    selectLevel.appendChild(opt);
+                });
+                
+                // Afficher le sous-menu
+                selectLevel.style.display = 'inline-block';
+            } else {
+                // Cacher le sous-menu s'il n'y a pas de sous-catégories
+                selectLevel.style.display = 'none';
+            }
+            
+            renderCourses(rawCoursesData);
+        }
+
+        function setupEventListeners() {
+            const selectCategory = document.getElementById('select-category');
+            const selectLevel = document.getElementById('select-level');
+            
+            selectCategory.addEventListener('change', handleCategoryChange);
+            selectLevel.addEventListener('change', () => renderCourses(rawCoursesData));
         }
 
         function showError() {
@@ -278,7 +477,7 @@
         function showCourses() {
             document.getElementById('loading').style.display = 'none';
             document.getElementById('error').style.display = 'none';
-            document.getElementById('courses-container').style.display = 'block';
+            document.getElementById('courses-container').style.display = 'grid';
             document.getElementById('last-update').style.display = 'block';
         }
 
@@ -292,22 +491,17 @@
                 }
                 
                 const data = await response.json();
-                console.log('Données récupérées:', data); // Pour debug
-                
-                // Adapter au format de votre sortie n8n
-                let coursesData = [];
+                console.log('Données récupérées:', data);
                 
                 if (data.Place_dispo && Array.isArray(data.Place_dispo)) {
-                    // Format: { "Place_dispo": ["string1", "string2", ...] }
-                    coursesData = data.Place_dispo.map(place => ({ "Place_dispo": place }));
+                    rawCoursesData = data.Place_dispo.map(place => ({ "Place_dispo": place }));
                 } else if (Array.isArray(data)) {
-                    // Format: [{ "Place_dispo": "string1" }, { "Place_dispo": "string2" }, ...]
-                    coursesData = data;
+                    rawCoursesData = data;
                 } else {
                     throw new Error('Format de données non reconnu');
                 }
                 
-                renderCourses(coursesData);
+                renderCourses(rawCoursesData);
                 showCourses();
                 
             } catch (error) {
@@ -316,7 +510,8 @@
             }
         }
 
-        // Charger les données au démarrage
+        // Initialisation globale
+        setupEventListeners();
         loadData();
         
         // Recharger les données toutes les 5 minutes
