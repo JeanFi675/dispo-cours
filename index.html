@@ -236,13 +236,58 @@
             color: #333;
         }
 
+        /* ── Mode Toggle (accordéon) ── */
+        .course-card.toggle-mode {
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .course-card.toggle-mode .course-toggle-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .course-card.toggle-mode .course-toggle-header:hover {
+            background: #fafaf9;
+        }
+
+        .course-card.toggle-mode .toggle-arrow {
+            font-size: 0.75em;
+            font-weight: 700;
+            color: #555;
+            transition: transform 0.15s ease;
+            flex-shrink: 0;
+        }
+
+        .course-card.toggle-mode.is-open .toggle-arrow {
+            transform: rotate(180deg);
+        }
+
+        .course-card.toggle-mode .course-toggle-body {
+            display: none;
+            padding: 8px 12px 10px;
+            border-top: 2px solid #000;
+            background: #fffbf0;
+        }
+
+        .course-card.toggle-mode.is-open .course-toggle-body {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
         @media (max-width: 768px) {
             .course-info {
                 flex-direction: column;
                 align-items: stretch;
                 gap: 8px;
             }
-            
+
             .places-available {
                 align-self: flex-end;
                 max-width: fit-content;
@@ -298,6 +343,13 @@
     </div>
 
     <script>
+        // =============================================
+        // CONFIGURATION D'AFFICHAGE
+        // 'list'   : toutes les infos toujours visibles (carte complète)
+        // 'toggle' : affichage accordéon — cliquer sur un cours pour voir horaire + prof
+        // =============================================
+        const DISPLAY_MODE = 'list';
+
         // Définition des sous-niveaux pour les catégories
         const subLevelsByCategory = {
             'Primaires': ['Débutants', 'Confirmés'],
@@ -471,24 +523,44 @@
             
             filteredCourses.forEach(parsed => {
                 const placesClass = getPlacesClass(parsed.places);
-                
                 const courseCard = document.createElement('div');
-                courseCard.className = 'course-card';
-                courseCard.innerHTML = `
-                    <div class="course-info">
-                        <div class="course-details">
-                            <div class="course-name">${parsed.name}</div>
-                            <div class="course-meta">
-                                <span class="schedule-tag">${parsed.schedule}</span>
-                                <span class="instructor-tag">${parsed.instructor}</span>
+
+                if (DISPLAY_MODE === 'toggle') {
+                    courseCard.className = 'course-card toggle-mode';
+                    courseCard.innerHTML = `
+                        <div class="course-toggle-header">
+                            <div class="course-name" style="margin-bottom:0">${parsed.name}</div>
+                            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+                                <div class="places-available ${placesClass}" style="box-shadow:none">${parsed.places}</div>
+                                <span class="toggle-arrow">▼</span>
                             </div>
                         </div>
-                        <div class="places-available ${placesClass}">
-                            ${parsed.places}
+                        <div class="course-toggle-body">
+                            <span class="schedule-tag">${parsed.schedule}</span>
+                            <span class="instructor-tag">${parsed.instructor}</span>
                         </div>
-                    </div>
-                `;
-                
+                    `;
+                    courseCard.querySelector('.course-toggle-header').addEventListener('click', () => {
+                        courseCard.classList.toggle('is-open');
+                    });
+                } else {
+                    courseCard.className = 'course-card';
+                    courseCard.innerHTML = `
+                        <div class="course-info">
+                            <div class="course-details">
+                                <div class="course-name">${parsed.name}</div>
+                                <div class="course-meta">
+                                    <span class="schedule-tag">${parsed.schedule}</span>
+                                    <span class="instructor-tag">${parsed.instructor}</span>
+                                </div>
+                            </div>
+                            <div class="places-available ${placesClass}">
+                                ${parsed.places}
+                            </div>
+                        </div>
+                    `;
+                }
+
                 container.appendChild(courseCard);
             });
 
