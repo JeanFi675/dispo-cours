@@ -539,10 +539,6 @@
             document.getElementById('error').style.display = 'none';
             document.getElementById('courses-container').style.display = 'grid';
             document.getElementById('last-update').style.display = 'block';
-
-            // Cacher les filtres en mode liste
-            document.getElementById('filters-container').style.display =
-                DISPLAY_MODE === 'list' ? 'none' : 'flex';
         }
 
         // Charger les données depuis le fichier JSON
@@ -572,6 +568,11 @@
                 console.error('Erreur lors du chargement des données:', error);
                 showError();
             }
+        }
+
+        // Masquer les filtres immédiatement si mode liste
+        if (DISPLAY_MODE === 'list') {
+            document.getElementById('filters-container').style.display = 'none';
         }
 
         // Initialisation globale
