@@ -236,51 +236,6 @@
             color: #333;
         }
 
-        /* ── Mode Toggle (accordéon) ── */
-        .course-card.toggle-mode {
-            padding: 0;
-            overflow: hidden;
-        }
-
-        .course-card.toggle-mode .course-toggle-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 12px;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .course-card.toggle-mode .course-toggle-header:hover {
-            background: #fafaf9;
-        }
-
-        .course-card.toggle-mode .toggle-arrow {
-            font-size: 0.75em;
-            font-weight: 700;
-            color: #555;
-            transition: transform 0.15s ease;
-            flex-shrink: 0;
-        }
-
-        .course-card.toggle-mode.is-open .toggle-arrow {
-            transform: rotate(180deg);
-        }
-
-        .course-card.toggle-mode .course-toggle-body {
-            display: none;
-            padding: 8px 12px 10px;
-            border-top: 2px solid #000;
-            background: #fffbf0;
-        }
-
-        .course-card.toggle-mode.is-open .course-toggle-body {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-
         @media (max-width: 768px) {
             .course-info {
                 flex-direction: column;
@@ -300,9 +255,9 @@
         <div class="header">
             <h1>Places Disponibles</h1>
         </div>
-        
-        <!-- Section des filtres -->
-        <div class="filters-container">
+
+        <!-- Section des filtres (visible uniquement en mode 'toggle') -->
+        <div class="filters-container" id="filters-container">
             <span class="filters-title-text">Sélectionnez vos critères</span>
             <div class="dropdowns-row">
                 <!-- Menu déroulant principal (Catégories) -->
@@ -314,29 +269,29 @@
                     <option value="Lycéen">Lycéens</option>
                     <option value="Adultes">Adultes</option>
                 </select>
-                
+
                 <!-- Sous-menu déroulant (Niveaux), masqué par défaut -->
                 <select id="select-level" style="display: none;">
                 </select>
             </div>
         </div>
-        
+
         <div id="loading" class="loading">
             Chargement des données...
         </div>
-        
+
         <div id="error" class="error" style="display: none;">
             Erreur lors du chargement des données. Veuillez réessayer plus tard.
         </div>
-        
+
         <div class="courses-grid" id="courses-container" style="display: none;">
             <!-- Les cours seront injectés ici par JavaScript -->
         </div>
-        
+
         <div class="last-update" id="last-update" style="display: none;">
             <div class="update-time">Mise à jour quotidienne à 13h</div>
             <div class="volunteer-note">
-                Les inscriptions sont validées manuellement par des bénévoles par ordre chronologique d'arrivée. 
+                Les inscriptions sont validées manuellement par des bénévoles par ordre chronologique d'arrivée.
                 Le nombre de places affiché est indicatif : d'autres demandes en cours de validation peuvent déjà occuper les places restantes.
             </div>
         </div>
@@ -345,8 +300,8 @@
     <script>
         // =============================================
         // CONFIGURATION D'AFFICHAGE
-        // 'list'   : toutes les infos toujours visibles (carte complète)
-        // 'toggle' : affichage accordéon — cliquer sur un cours pour voir horaire + prof
+        // 'toggle' : menus déroulants — l'utilisateur choisit sa catégorie/niveau
+        // 'list'   : tous les cours affichés directement, sans filtre
         // =============================================
         const DISPLAY_MODE = 'list';
 
@@ -374,9 +329,9 @@
             const parts = schedule.toLowerCase().split(' à ');
             const dayName = parts[0]?.trim();
             const timeStr = parts[1]?.trim();
-            
+
             const dayVal = daysMap[dayName] || 8;
-            
+
             let timeVal = 0;
             if (timeStr) {
                 const timeParts = timeStr.split(':');
@@ -384,7 +339,7 @@
                 const minutes = parseInt(timeParts[1], 10) || 0;
                 timeVal = hours * 60 + minutes;
             }
-            
+
             return dayVal * 10000 + timeVal;
         }
 
@@ -393,11 +348,11 @@
 
         function getCategoryAndLevel(courseName) {
             const nameLower = courseName.toLowerCase();
-            const normalized = nameLower.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-            
+            const normalized = nameLower.normalize("NFD").replace(/[̀-ͯ]/g, "");
+
             let category = 'Autre';
             let level = null;
-            
+
             if (normalized.includes('5-6 ans') || normalized.includes('5-6')) {
                 category = '5-6 ans';
             } else if (normalized.includes('primaire')) {
@@ -409,7 +364,7 @@
             } else if (normalized.includes('adulte')) {
                 category = 'Adultes';
             }
-            
+
             if (normalized.includes('debutant')) {
                 level = 'Débutants';
             } else if (normalized.includes('confirme')) {
@@ -419,7 +374,7 @@
             } else if (normalized.includes('perfectionnement')) {
                 level = 'Perfectionnement';
             }
-            
+
             return { category, level };
         }
 
@@ -427,14 +382,14 @@
             const parts = courseString.split(' : ');
             const placesCount = parseInt(parts[parts.length - 1]);
             const remainingString = parts.slice(0, -1).join(' : ');
-            
+
             const pipeParts = remainingString.split(' | ');
             const instructor = pipeParts[pipeParts.length - 1];
             const courseName = pipeParts[0];
             const schedule = pipeParts[1];
-            
+
             const catLevel = getCategoryAndLevel(courseName);
-            
+
             return {
                 name: courseName,
                 schedule: schedule,
@@ -454,161 +409,120 @@
         function shouldShowCourse(course) {
             const selectCategory = document.getElementById('select-category');
             const selectLevel = document.getElementById('select-level');
-            
+
             const selectedCat = selectCategory.value;
             const selectedLevel = selectLevel.style.display !== 'none' ? selectLevel.value : 'Tous';
-            
-            // Si la catégorie n'est pas sélectionnée
-            if (!selectedCat) {
-                return false;
-            }
-            
-            // Si le cours n'appartient pas à la catégorie
-            if (course.category !== selectedCat) {
-                return false;
-            }
-            
-            // Si le niveau requis n'a pas encore été choisi
-            if (selectedLevel === '') {
-                return false;
-            }
-            
-            // Filtrer par niveau
-            if (selectedLevel !== 'Tous' && course.level !== selectedLevel) {
-                return false;
-            }
-            
+
+            if (!selectedCat) return false;
+            if (course.category !== selectedCat) return false;
+            if (selectedLevel === '') return false;
+            if (selectedLevel !== 'Tous' && course.level !== selectedLevel) return false;
+
             return true;
         }
 
         function renderCourses(coursesData) {
             const container = document.getElementById('courses-container');
             container.innerHTML = '';
-            
-            const selectCategory = document.getElementById('select-category');
-            const selectLevel = document.getElementById('select-level');
-            
-            const selectedCat = selectCategory.value;
-            const selectedLevel = selectLevel.style.display !== 'none' ? selectLevel.value : 'Tous';
-            
-            // Si aucun filtre de catégorie n'a été choisi
-            if (!selectedCat) {
-                container.innerHTML = '<div style="text-align: center; padding: 24px; color: #1a1a1a; font-weight: 700; text-transform: uppercase; border: 2px dashed #000; background: #fff;">Veuillez choisir une catégorie pour afficher les cours</div>';
-                return;
-            }
-            
-            // Si un niveau est requis mais non encore sélectionné
-            if (selectedCat in subLevelsByCategory && selectedLevel === '') {
-                container.innerHTML = '<div style="text-align: center; padding: 24px; color: #1a1a1a; font-weight: 700; text-transform: uppercase; border: 2px dashed #000; background: #fff;">Veuillez sélectionner un niveau</div>';
-                return;
-            }
-            
+
             if (!coursesData || !Array.isArray(coursesData)) {
                 console.error('Données des cours invalides:', coursesData);
                 showError();
                 return;
             }
-            
-            // Parser et filtrer les cours d'abord
-            const filteredCourses = coursesData
-                .map(course => parseCourseName(course.Place_dispo))
-                .filter(course => shouldShowCourse(course));
-            
-            // Trier les cours par ordre chronologique
-            filteredCourses.sort((a, b) => {
-                return getScheduleSortValue(a.schedule) - getScheduleSortValue(b.schedule);
-            });
-            
-            let displayedCount = filteredCourses.length;
-            
-            filteredCourses.forEach(parsed => {
-                const placesClass = getPlacesClass(parsed.places);
-                const courseCard = document.createElement('div');
 
-                if (DISPLAY_MODE === 'toggle') {
-                    courseCard.className = 'course-card toggle-mode';
-                    courseCard.innerHTML = `
-                        <div class="course-toggle-header">
-                            <div class="course-name" style="margin-bottom:0">${parsed.name}</div>
-                            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-                                <div class="places-available ${placesClass}" style="box-shadow:none">${parsed.places}</div>
-                                <span class="toggle-arrow">▼</span>
-                            </div>
-                        </div>
-                        <div class="course-toggle-body">
-                            <span class="schedule-tag">${parsed.schedule}</span>
-                            <span class="instructor-tag">${parsed.instructor}</span>
-                        </div>
-                    `;
-                    courseCard.querySelector('.course-toggle-header').addEventListener('click', () => {
-                        courseCard.classList.toggle('is-open');
-                    });
-                } else {
-                    courseCard.className = 'course-card';
-                    courseCard.innerHTML = `
-                        <div class="course-info">
-                            <div class="course-details">
-                                <div class="course-name">${parsed.name}</div>
-                                <div class="course-meta">
-                                    <span class="schedule-tag">${parsed.schedule}</span>
-                                    <span class="instructor-tag">${parsed.instructor}</span>
-                                </div>
-                            </div>
-                            <div class="places-available ${placesClass}">
-                                ${parsed.places}
-                            </div>
-                        </div>
-                    `;
+            let coursesToDisplay;
+
+            if (DISPLAY_MODE === 'list') {
+                // Tous les cours, sans filtre
+                coursesToDisplay = coursesData.map(course => parseCourseName(course.Place_dispo));
+            } else {
+                // Mode toggle : filtrage par catégorie/niveau
+                const selectCategory = document.getElementById('select-category');
+                const selectLevel = document.getElementById('select-level');
+                const selectedCat = selectCategory.value;
+                const selectedLevel = selectLevel.style.display !== 'none' ? selectLevel.value : 'Tous';
+
+                if (!selectedCat) {
+                    container.innerHTML = '<div style="text-align: center; padding: 24px; color: #1a1a1a; font-weight: 700; text-transform: uppercase; border: 2px dashed #000; background: #fff;">Veuillez choisir une catégorie pour afficher les cours</div>';
+                    return;
                 }
 
+                if (selectedCat in subLevelsByCategory && selectedLevel === '') {
+                    container.innerHTML = '<div style="text-align: center; padding: 24px; color: #1a1a1a; font-weight: 700; text-transform: uppercase; border: 2px dashed #000; background: #fff;">Veuillez sélectionner un niveau</div>';
+                    return;
+                }
+
+                coursesToDisplay = coursesData
+                    .map(course => parseCourseName(course.Place_dispo))
+                    .filter(course => shouldShowCourse(course));
+            }
+
+            // Tri chronologique
+            coursesToDisplay.sort((a, b) => getScheduleSortValue(a.schedule) - getScheduleSortValue(b.schedule));
+
+            if (coursesToDisplay.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 24px; color: #1a1a1a; font-weight: 700; text-transform: uppercase; border: 2px dashed #000; background: #fff;">Aucun cours disponible pour cette sélection</div>';
+                return;
+            }
+
+            coursesToDisplay.forEach(parsed => {
+                const placesClass = getPlacesClass(parsed.places);
+                const courseCard = document.createElement('div');
+                courseCard.className = 'course-card';
+                courseCard.innerHTML = `
+                    <div class="course-info">
+                        <div class="course-details">
+                            <div class="course-name">${parsed.name}</div>
+                            <div class="course-meta">
+                                <span class="schedule-tag">${parsed.schedule}</span>
+                                <span class="instructor-tag">${parsed.instructor}</span>
+                            </div>
+                        </div>
+                        <div class="places-available ${placesClass}">
+                            ${parsed.places}
+                        </div>
+                    </div>
+                `;
                 container.appendChild(courseCard);
             });
-
-            if (displayedCount === 0) {
-                container.innerHTML = '<div style="text-align: center; padding: 24px; color: #1a1a1a; font-weight: 700; text-transform: uppercase; border: 2px dashed #000; background: #fff;">Aucun cours disponible pour cette sélection</div>';
-            }
         }
 
         function handleCategoryChange() {
             const selectCategory = document.getElementById('select-category');
             const selectLevel = document.getElementById('select-level');
-            
+
             const category = selectCategory.value;
-            
-            // Vider le sous-menu de ses anciennes options
+
             selectLevel.innerHTML = '';
-            
+
             if (category in subLevelsByCategory) {
-                // Créer l'option par défaut "Choisir niveau"
                 const defaultOpt = document.createElement('option');
                 defaultOpt.value = '';
                 defaultOpt.disabled = true;
                 defaultOpt.selected = true;
                 defaultOpt.textContent = `-- Choisir niveau --`;
                 selectLevel.appendChild(defaultOpt);
-                
-                // Peupler les niveaux correspondants
+
                 subLevelsByCategory[category].forEach(level => {
                     const opt = document.createElement('option');
                     opt.value = level;
                     opt.textContent = level;
                     selectLevel.appendChild(opt);
                 });
-                
-                // Afficher le sous-menu
+
                 selectLevel.style.display = 'inline-block';
             } else {
-                // Cacher le sous-menu s'il n'y a pas de sous-catégories
                 selectLevel.style.display = 'none';
             }
-            
+
             renderCourses(rawCoursesData);
         }
 
         function setupEventListeners() {
             const selectCategory = document.getElementById('select-category');
             const selectLevel = document.getElementById('select-level');
-            
+
             selectCategory.addEventListener('change', handleCategoryChange);
             selectLevel.addEventListener('change', () => renderCourses(rawCoursesData));
         }
@@ -625,20 +539,24 @@
             document.getElementById('error').style.display = 'none';
             document.getElementById('courses-container').style.display = 'grid';
             document.getElementById('last-update').style.display = 'block';
+
+            // Cacher les filtres en mode liste
+            document.getElementById('filters-container').style.display =
+                DISPLAY_MODE === 'list' ? 'none' : 'flex';
         }
 
         // Charger les données depuis le fichier JSON
         async function loadData() {
             try {
                 const response = await fetch('./data.json?t=' + new Date().getTime());
-                
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                
+
                 const data = await response.json();
                 console.log('Données récupérées:', data);
-                
+
                 if (data.Place_dispo && Array.isArray(data.Place_dispo)) {
                     rawCoursesData = data.Place_dispo.map(place => ({ "Place_dispo": place }));
                 } else if (Array.isArray(data)) {
@@ -646,10 +564,10 @@
                 } else {
                     throw new Error('Format de données non reconnu');
                 }
-                
+
                 renderCourses(rawCoursesData);
                 showCourses();
-                
+
             } catch (error) {
                 console.error('Erreur lors du chargement des données:', error);
                 showError();
@@ -659,7 +577,7 @@
         // Initialisation globale
         setupEventListeners();
         loadData();
-        
+
         // Recharger les données toutes les 5 minutes
         setInterval(loadData, 300000);
     </script>
